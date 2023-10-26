@@ -1,0 +1,54 @@
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  HttpCode,
+  Query,
+} from '@nestjs/common'
+import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation-pipe'
+import { z } from 'zod'
+import { FetchRecentQuestionsUseCase } from '@/domain/forum/application/use-cases/fetch-recent-questions'
+import {
+  QuestionPresenter,
+  QuestionPresenterResponse,
+} from '../presenters/question-presenter'
+
+const pageQueryParamSchema = z
+  .string()
+  .optional()
+  .default('1')
+  .transform(Number)
+  .pipe(z.number().min(1))
+
+type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
+
+const queryValidationPipe = new ZodValidationPipe(pageQueryParamSchema)
+
+interface IResponse {
+  questions: QuestionPresenterResponse[]
+}
+
+@Controller('/questions')
+export class FetchRecentQuestionsController {
+  constructor(
+    private readonly retchRecentQuestions: FetchRecentQuestionsUseCase,
+  ) {}
+
+  @Get()
+  @HttpCode(200)
+  public async handle(
+    @Query('page', queryValidationPipe) page: PageQueryParamSchema,
+  ): Promise<IResponse> {
+    const result = await this.retchRecentQuestions.execute({
+      page,
+    })
+
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
+
+    const { questions } = result.value
+
+    return { questions: questions.map(QuestionPresenter.toHTTP) }
+  }
+}
