@@ -10,9 +10,9 @@ import { z } from 'zod'
 import { ZodValidationPipe } from '../pipes/zod-validation-pipe'
 import { FetchAnswerCommentsUseCase } from '@/domain/forum/application/use-cases/fetch-answer-comments'
 import {
-  CommentPresenter,
-  CommentPresenterResponse,
-} from '../presenters/comment-presenter'
+  CommentWithAuthorPresenter,
+  CommentWithAuthorPresenterResponse,
+} from '../presenters/comment-with-author-presenter'
 
 const pageQueryParamSchema = z
   .string()
@@ -26,7 +26,7 @@ type PageQueryParamSchema = z.infer<typeof pageQueryParamSchema>
 const queryValidationPipe = new ZodValidationPipe(pageQueryParamSchema)
 
 interface IResponse {
-  comments: CommentPresenterResponse[]
+  comments: CommentWithAuthorPresenterResponse[]
 }
 
 @Controller('/answers/:answerId/comments')
@@ -50,8 +50,8 @@ export class FetchAnswerCommentsController {
       throw new BadRequestException()
     }
 
-    const answerComments = result.value.answerComments
+    const { comments } = result.value
 
-    return { comments: answerComments.map(CommentPresenter.toHTTP) }
+    return { comments: comments.map(CommentWithAuthorPresenter.toHTTP) }
   }
 }

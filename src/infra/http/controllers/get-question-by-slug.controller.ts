@@ -5,14 +5,14 @@ import {
   HttpCode,
   Param,
 } from '@nestjs/common'
-import {
-  QuestionPresenter,
-  QuestionPresenterResponse,
-} from '../presenters/question-presenter'
 import { GetQuestionBySlugUseCase } from '@/domain/forum/application/use-cases/get-question-by-slug'
+import {
+  QuestionDetailsPresenter,
+  QuestionDetailsPresenterResponse,
+} from '../presenters/question-details-presenter'
 
 interface IResponse {
-  question: QuestionPresenterResponse
+  question: QuestionDetailsPresenterResponse
 }
 
 @Controller('/questions/:slug')
@@ -32,6 +32,6 @@ export class GetQuestionBySlugController {
 
     const { question } = result.value
 
-    return { question: QuestionPresenter.toHTTP(question) }
+    return { question: QuestionDetailsPresenter.toHTTP(question) }
   }
 }
